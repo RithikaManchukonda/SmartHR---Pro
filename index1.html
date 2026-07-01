@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHR Pro - Advanced Management System</title>
+    <style>
+        :root {
+            --bg-main: #fcfafa;
+            --bg-card: #ffffff;
+            --sidebar-color: #1e293b;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --pro-blue: #2a4282; 
+            --pro-orange: #c96214; 
+            --pro-green: #1aa940; 
+            --pro-grey: #e2e8f0; 
+            --pro-grey-hover: #cbd5e1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body { background-color: var(--bg-main); color: var(--text-dark); height: 100vh; overflow: hidden; }
+
+        .screen { display: none; height: 100%; }
+        .screen.active { display: flex; }
+
+        /* PROFESSIONAL LOGIN STYLING */
+        #login-screen { justify-content: center; align-items: center; background: #e0e6ed; }
+
+        .login-wrapper {
+            display: flex;
+            background: var(--bg-card);
+            width: 80vw;
+            max-width: 900px;
+            height: 70vh;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Left Panel (Blue) */
+        .login-left {
+            flex: 1;
+            background-color: var(--pro-blue);
+            color: white;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-area { display: flex; align-items: center; margin-bottom: 20px; }
+        .logo-emoji { font-size: 40px; margin-right: 15px; }
+        .logo-text h1 { font-size: 36px; font-weight: 700; }
+        .logo-text h2 { font-size: 32px; font-weight: 300; }
+        .subtitle { color: rgba(255,255,255,0.7); font-size: 16px; margin-bottom: auto; line-height: 1.4; }
+
+        .role-selector { margin-top: auto; }
+        .role-selector label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .role-selector select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .role-selector select option { background: var(--pro-blue); color: white; }
+
+        /* Right Panel (White) */
+        .login-right { flex: 1.2; background-color: white; padding: 60px 50px; }
+        .right-inner { max-width: 360px; margin: 0 auto; }
+        .right-inner h3 { font-size: 24px; font-weight: 600; margin-bottom: 30px; text-align: center; }
+
+        .login-right .form-group { margin-bottom: 18px; }
+        .login-right .form-group label { font-size: 12px; font-weight: 600; margin-bottom: 5px; color: var(--text-dark); display: block; }
+        .login-right .form-group input { width: 100%; padding: 12px 14px; border: 1px solid var(--pro-grey); border-radius: 6px; font-size: 14px; }
+        .login-right .form-group input:focus { outline: none; border-color: var(--primary); }
+
+        .extra-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 12px; }
+        .checkbox-label { display: flex; align-items: center; color: var(--text-dark); }
+        .checkbox-label input { margin-right: 6px; }
+        .green-link { color: var(--pro-green); text-decoration: none; font-weight: 600; }
+
+        .btn-login { width: 100%; background-color: var(--pro-orange); color: white; padding: 14px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 25px; }
+        .btn-login:hover { opacity: 0.9; }
+
+        .divider { display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 12px; margin-bottom: 25px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--pro-grey); }
+        .divider span { padding: 0 10px; }
+
+        .btn-google { width: 100%; background-color: white; color: var(--text-dark); padding: 12px; border: 1px solid var(--pro-grey); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-google:hover { background-color: #f8fafc; }
+        .google-dot { width: 10px; height: 10px; background-color: var(--primary); border-radius: 50%; margin-right: 8px; }
+
+        <!-- Dashboard Styling -->
+        #dashboard-layout { flex-direction: row; }
+        .sidebar { width: 260px; background-color: var(--sidebar-color); color: white; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .sidebar-header { padding-bottom: 20px; border-bottom: 1px solid #334155; margin-bottom: 20px; }
+        .badge { background-color: var(--primary); padding: 4px 8px; font-size: 11px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+        
+        /* Navigation Links */
+        .nav-menu { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item { display: block; color: #94a3b8; text-decoration: none; padding: 10px 14px; border-radius: 6px; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background-color: #334155; color: white; }
+        .nav-section-title { font-size: 11px; text-transform: uppercase; color: #64748b; margin-top: 15px; margin-bottom: 5px; padding-left: 10px; font-weight: bold; }
+
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .content-header { background-color: var(--bg-card); padding: 20px 30px; border-bottom: 1px solid var(--border); }
+        .content-body { padding: 30px; }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Grid & Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .card { background: var(--bg-card); padding: 24px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .card h3 { font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
+        .card p { font-size: 28px; font-weight: bold; color: var(--pro-blue); }
+
+        /* Forms & Buttons */
+        .crud-form { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .crud-form h3 { margin-bottom: 15px; font-size: 16px; color: var(--pro-blue); }
+        .form-row { display: flex; gap: 10px; }
+        .form-row input, .form-row select { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 4px; }
+        .btn-primary, .btn-secondary, .btn-success, .btn-danger, .btn-warning { padding: 8px 16px; border-radius: 6px; cursor: pointer; border: none; color: white; font-weight: 600; font-size: 13px; }
+        .btn-primary { background: var(--primary); }
+        .btn-secondary { background: #475569; width: 100%; }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); color: black; }
+
+        /* Tables */
+        .table-container { background: rgb(235, 213, 213); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .data-table th { background-color: #f8fafc; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 12px; }
+        .data-table tr:hover { background-color: #f8fafc; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-progress { background: #dbeafe; color: #1e40af; }
+
+        /* CSS Bar Charts for Analytics Tab */
+        .chart-container { display: flex; align-items: flex-end; height: 250px; gap: 20px; padding: 20px; background: white; border: 1px solid var(--border); border-radius: 8px; margin-top: 20px; }
+        .bar-wrap { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+        .bar { width: 100%; background-color: var(--primary); border-radius: 4px 4px 0 0; transition: height 0.5s; display: flex; justify-content: center; align-items: flex-start; padding-top: 10px; color: white; font-size: 12px; font-weight: bold; }
+        .bar-label { margin-top: 10px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-align: center; }
+
+    </style>
+</head>
+<body>
+
+    <!-- PROFESSIONAL LOGIN SCREEN -->
+    <div id="login-screen" class="screen active">
+        <div class="login-wrapper">
+            <!-- Left Side Panel (Blue) -->
+            <div class="login-left">
+                <div class="logo-area">
+                   <!-- <span class="logo-emoji">🚀</span> -->
+                    <div class="logo-text">
+                        <h1>SmartHR</h1>
+                        <h2>Pro</h2>
+                    </div>
+                </div>
+                <p class="subtitle">Employee Performance & Project Management System</p>
+                <div class="role-selector">
+                    <label>Login As</label>
+                    <select id="login-role">
+                        <option value="HR">HR Administrator</option>
+                        <option value="MANAGER">Project Manager</option>
+                        <option value="EMPLOYEE"> Employee</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Right Side Panel (White) -->
+            <div class="login-right">
+                <div class="right-inner">
+                    <h3>Welcome Back 👋</h3>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="user-email" placeholder="Enter email" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="user-password" placeholder="Enter password" required>
+                        </div>
+                        <div class="extra-controls">
+                            <label class="checkbox-label">
+                                <input type="checkbox"> Remember Me
+                            </label>
+                            <a href="#" class="green-link">Forgot Password?</a>
+                        </div>
+                        <button type="submit" class="btn-login">Login</button>
+                    </form>
+                    
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+                    
+                    <button class="btn-google">
+                        <span class="google-dot"></span> Continue with Google
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard-layout" class="screen">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3 id="sidebar-name">SmartHR</h3>
+                <span id="user-badge" class="badge">Role</span>
+            </div>
+            
+            <!-- COMPREHENSIVE SIDEBAR NAVIGATION -->
+            <nav class="nav-menu">
+                <div class="nav-section-title">Main</div>
+                <a href="#" class="nav-item active" data-target="overview-tab">Dashboard Overview</a>
+                
+                <div class="nav-section-title hr-only">People Management</div>
+                <a href="#" class="nav-item hr-only" data-target="emp-info-tab">Employee Info</a>
+                <a href="#" class="nav-item hr-only" data-target="mgr-info-tab">Manager Info</a>
+                
+                <div class="nav-section-title">My Workspace</div>
+                <a href="#" class="nav-item" data-target="goals-tab">Targets & Goals</a>
+                <a href="#" class="nav-item" data-target="projects-tab">Projects & Team</a>
+                <a href="#" class="nav-item" data-target="leaves-tab">Leaves & Attendance</a>
+                
+                <div class="nav-section-title hr-only">Insights</div>
+                <a href="#" class="nav-item hr-only" data-target="reports-tab">System Reports</a>
+                <a href="#" class="nav-item hr-only" data-target="charts-tab">Charts & Analytics</a>
+            </nav>
+            
+            <div class="sidebar-footer" style="margin-top: auto; padding-top: 20px;">
+                <button id="logout-btn" class="btn-secondary">Log Out</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="page-title">Dashboard Overview</h1>
+            </header>
+
+            <div class="content-body">
+                
+                <!-- 1. OVERVIEW TAB -->
+                <section id="overview-tab" class="tab-content active">
+                    <div class="stats-grid" id="stats-container">
+                        <!-- Loaded dynamically by JS -->
+                    </div>
+                </section>
+
+                <!-- 2. EMPLOYEE INFO TAB (HR ONLY) -->
+                <section id="emp-info-tab" class="tab-content">
+                    <div class="crud-form">
+                        <h3>Onboard New Employee</h3>
+                        <div class="form-row">
+                            <input type="text" id="emp-name" placeholder="Employee Full Name">
+                            <input type="text" id="emp-dept" placeholder="Department (e.g., IT, Sales)">
+                            <button class="btn-success" onclick="createUser('EMPLOYEE')">Add Employee</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Emp ID</th><th>Name</th><th>Email</th><th>Department</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="employee-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 3. MANAGER INFO TAB (HR ONLY) -->
+                <section id="mgr-info-tab" class="tab-content">
+                    <div class="crud-form">
+                        <h3>Appoint New Manager</h3>
+                        <div class="form-row">
+                            <input type="text" id="mgr-name" placeholder="Manager Full Name">
+                            <input type="text" id="mgr-dept" placeholder="Department (e.g., IT, Sales)">
+                            <button class="btn-primary" onclick="createUser('MANAGER')">Add Manager</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Mgr ID</th><th>Name</th><th>Email</th><th>Department</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="manager-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- NEW: TARGETS & GOALS TAB -->
+                <section id="goals-tab" class="tab-content">
+                    <div class="crud-form mgr-hr-only" id="manager-goals-section">
+                        <h3>Assign New Target</h3>
+                        <div class="form-row">
+                            <input type="text" id="goal-desc" placeholder="Target Description / KPI">
+                            <input type="text" id="goal-assignee" placeholder="Assign To (Employee Name)">
+                            <button class="btn-success" onclick="createGoal()">Set Target</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Target ID</th><th>Description</th><th>Assigned To</th><th>Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="goals-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 4. PROJECTS TAB -->
+                <section id="projects-tab" class="tab-content">
+                    <div class="crud-form mgr-hr-only" id="manager-crud-section">
+                        <h3>Create & Assign Project</h3>
+                        <div class="form-row">
+                            <input type="text" id="proj-name" placeholder="Project Name">
+                            <input type="text" id="proj-team" placeholder="Assign to (Employee Name)">
+                            <button class="btn-success" onclick="createProject()">Launch Project</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Proj ID</th><th>Project Name</th><th>Team / People Involved</th><th>Progress</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="project-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 5. LEAVES TAB -->
+                <section id="leaves-tab" class="tab-content">
+                    <div class="crud-form" id="employee-leave-section">
+                        <h3>Apply for Leave</h3>
+                        <div class="form-row">
+                            <select id="leave-type">
+                                <option>Sick Leave</option>
+                                <option>Casual Leave</option>
+                                <option>Paid Time Off (PTO)</option>
+                            </select>
+                            <input type="number" id="leave-days" placeholder="Number of Days" min="1" max="30">
+                            <button class="btn-success" onclick="applyLeave()">Submit Request</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Applicant</th><th>Type</th><th>Days</th><th>Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="leave-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 6. REPORTS TAB (HR ONLY) -->
+                <section id="reports-tab" class="tab-content">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Report Name</th><th>Generated By</th><th>Date</th><th>Action</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Q3 Performance Appraisals</td><td>System Auto</td><td>Today</td><td><button class="btn-primary">Download PDF</button></td></tr>
+                                <tr><td>Monthly Attendance Log</td><td>System Auto</td><td>Yesterday</td><td><button class="btn-primary">Download CSV</button></td></tr>
+                                <tr><td>Active Projects Summary</td><td>System Auto</td><td>Last Week</td><td><button class="btn-primary">Download PDF</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 7. CHARTS & ANALYTICS TAB (HR ONLY) -->
+                <section id="charts-tab" class="tab-content">
+                    <h3 style="color: var(--pro-blue); margin-bottom: 10px;">Department Headcount (Live Data)</h3>
+                    <div class="chart-container" id="headcount-chart">
+                        <!-- Bars injected by JS -->
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- 1. STATE MANAGEMENT ---
+        const appState = {
+            currentUser: null,
+            users: [], // Holds both Managers and Employees
+            projects: [],  
+            leaves: [],
+            goals: [], // New state for targets
+            userCounter: 1,
+            projCounter: 1,
+            goalCounter: 1
+        };
+
+        // --- 2. LOGIN LOGIC ---
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('user-email').value;
+            const role = document.getElementById('login-role').value;
+
+            if (!email) return alert("Email is required!");
+
+            // Check if user exists, else auto-register them
+            let user = appState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+            
+            if (!user) {
+                const namePrefix = email.split('@')[0];
+                const formattedName = namePrefix.charAt(0).toUpperCase() + namePrefix.slice(1);
+                user = { 
+                    id: `USR00${appState.userCounter++}`, 
+                    email: email, 
+                    name: `${formattedName} (Demo)`, 
+                    role: role, 
+                    dept: 'Corporate Operations' 
+                };
+                appState.users.push(user);
+            }
+
+            appState.currentUser = user;
+            
+            // Update UI Sidebar
+            document.getElementById('sidebar-name').innerText = user.name;
+            document.getElementById('user-badge').innerText = user.role;
+            
+            applyRoleBasedSecurity();
+            
+            // Switch Screens
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('dashboard-layout').classList.add('active');
+            
+            // Reset to first tab
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.querySelector('[data-target="overview-tab"]').classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('overview-tab').classList.add('active');
+            document.getElementById('page-title').innerText = "Dashboard Overview";
+
+            renderDashboardOverview();
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            document.getElementById('dashboard-layout').classList.remove('active');
+            document.getElementById('login-screen').classList.add('active');
+            document.getElementById('login-form').reset();
+            appState.currentUser = null;
+        });
+
+        // --- 3. SECURITY & NAVIGATION LOGIC ---
+        function applyRoleBasedSecurity() {
+            const role = appState.currentUser.role;
+            
+            // Show/Hide Elements tagged with 'hr-only'
+            document.querySelectorAll('.hr-only').forEach(el => {
+                el.style.display = (role === 'HR') ? 'block' : 'none';
+            });
+
+            // Manager & HR can create projects and assign targets, Employees cannot
+            document.querySelectorAll('.mgr-hr-only').forEach(el => {
+                el.style.display = (role === 'MANAGER' || role === 'HR') ? 'block' : 'none';
+            });
+            
+            // Employee specifically can apply for leaves
+            document.getElementById('employee-leave-section').style.display = (role === 'EMPLOYEE') ? 'block' : 'none';
+        }
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                
+                this.classList.add('active');
+                const targetTab = this.getAttribute('data-target');
+                document.getElementById(targetTab).classList.add('active');
+                document.getElementById('page-title').innerText = this.innerText;
+                
+                // Route to specific render functions
+                if(targetTab === 'overview-tab') renderDashboardOverview();
+                if(targetTab === 'emp-info-tab') renderUsers();
+                if(targetTab === 'mgr-info-tab') renderUsers();
+                if(targetTab === 'goals-tab') renderGoals();
+                if(targetTab === 'projects-tab') renderProjects();
+                if(targetTab === 'leaves-tab') renderLeaves();
+                if(targetTab === 'charts-tab') renderCharts();
+            });
+        });
+
+        // --- 4. CRUD: USERS (HR ONLY) ---
+        function createUser(targetRole) {
+            const prefix = targetRole === 'EMPLOYEE' ? 'emp' : 'mgr';
+            const name = document.getElementById(`${prefix}-name`).value;
+            const dept = document.getElementById(`${prefix}-dept`).value;
+            
+            if(!name) return alert("Name is required!");
+
+            appState.users.push({ 
+                id: `USR00${appState.userCounter++}`, 
+                email: `${name.toLowerCase().replace(' ', '.')}@democompany.com`, 
+                name: name, 
+                role: targetRole, 
+                dept: dept || 'Unassigned'
+            });
+            
+            document.getElementById(`${prefix}-name`).value = '';
+            document.getElementById(`${prefix}-dept`).value = '';
+            renderUsers();
+        }
+
+        function deleteUser(id) {
+            appState.users = appState.users.filter(u => u.id !== id);
+            renderUsers();
+        }
+
+        function renderUsers() {
+            // Render Employees
+            const empTbody = document.getElementById('employee-table-body');
+            const employees = appState.users.filter(u => u.role === 'EMPLOYEE');
+            empTbody.innerHTML = employees.map(u => `
+                <tr>
+                    <td>${u.id}</td><td>${u.name}</td><td>${u.email}</td><td>${u.dept}</td>
+                    <td><button class="btn-danger" onclick="deleteUser('${u.id}')">Remove</button></td>
+                </tr>
+            `).join('');
+
+            // Render Managers
+            const mgrTbody = document.getElementById('manager-table-body');
+            const managers = appState.users.filter(u => u.role === 'MANAGER');
+            mgrTbody.innerHTML = managers.map(u => `
+                <tr>
+                    <td>${u.id}</td><td>${u.name}</td><td>${u.email}</td><td>${u.dept}</td>
+                    <td><button class="btn-danger" onclick="deleteUser('${u.id}')">Remove</button></td>
+                </tr>
+            `).join('');
+        }
+
+        // --- NEW CRUD: TARGETS & GOALS ---
+        function createGoal() {
+            const desc = document.getElementById('goal-desc').value;
+            const assignee = document.getElementById('goal-assignee').value;
+            
+            if(!desc) return alert("Target description is required!");
+
+            appState.goals.push({ 
+                id: `TGT00${appState.goalCounter++}`, 
+                desc: desc, 
+                assignee: assignee, 
+                status: 'Pending' 
+            });
+            
+            document.getElementById('goal-desc').value = '';
+            document.getElementById('goal-assignee').value = '';
+            renderGoals();
+        }
+
+        function updateGoalStatus(id) {
+            const goal = appState.goals.find(g => g.id === id);
+            if(goal) {
+                // Simple cycle through statuses
+                if(goal.status === 'Pending') goal.status = 'In Progress';
+                else if(goal.status === 'In Progress') goal.status = 'Completed';
+                else goal.status = 'Pending';
+                renderGoals();
+            }
+        }
+
+        function renderGoals() {
+            const tbody = document.getElementById('goals-table-body');
+            const role = appState.currentUser.role;
+            const userName = appState.currentUser.name;
+
+            // Employees see their own targets. HR/Managers see all.
+            const visibleGoals = role === 'EMPLOYEE' 
+                ? appState.goals.filter(g => g.assignee.toLowerCase().includes(userName.toLowerCase()))
+                : appState.goals;
+
+            tbody.innerHTML = visibleGoals.map(goal => {
+                let badgeClass = 'status-pending';
+                if(goal.status === 'In Progress') badgeClass = 'status-progress';
+                if(goal.status === 'Completed') badgeClass = 'status-approved';
+
+                return `
+                    <tr>
+                        <td>${goal.id}</td><td>${goal.desc}</td><td>${goal.assignee}</td>
+                        <td><span class="status-badge ${badgeClass}">${goal.status}</span></td>
+                        <td>
+                            ${(role === 'EMPLOYEE' || role === 'MANAGER' || role === 'HR') ? 
+                                `<button class="btn-primary" onclick="updateGoalStatus('${goal.id}')">Update Status</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- 5. CRUD: PROJECTS ---
+        function createProject() {
+            const name = document.getElementById('proj-name').value;
+            const team = document.getElementById('proj-team').value;
+            
+            if(!name) return alert("Project name is required!");
+
+            appState.projects.push({ id: `PRJ00${appState.projCounter++}`, name, team, progress: 0 });
+            
+            document.getElementById('proj-name').value = '';
+            document.getElementById('proj-team').value = '';
+            renderProjects();
+        }
+
+        function updateProgress(id) {
+            const newProgress = prompt("Enter new progress percentage (0-100):");
+            if (newProgress && !isNaN(newProgress) && newProgress >= 0 && newProgress <= 100) {
+                const proj = appState.projects.find(p => p.id === id);
+                if(proj) proj.progress = newProgress;
+                renderProjects();
+            } else {
+                alert("Please enter a valid number between 0 and 100.");
+            }
+        }
+
+        function renderProjects() {
+            const tbody = document.getElementById('project-table-body');
+            const role = appState.currentUser.role;
+            const userName = appState.currentUser.name;
+
+            // Employees only see their own projects. HR/Managers see all.
+            const visibleProjects = role === 'EMPLOYEE' 
+                ? appState.projects.filter(p => p.team.toLowerCase().includes(userName.toLowerCase()))
+                : appState.projects;
+
+            tbody.innerHTML = visibleProjects.map(proj => `
+                <tr>
+                    <td>${proj.id}</td><td>${proj.name}</td><td>${proj.team}</td>
+                    <td><strong>${proj.progress}%</strong></td>
+                    <td>
+                        <button class="btn-warning" onclick="updateProgress('${proj.id}')">Update %</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- 6. CRUD: LEAVES ---
+        function applyLeave() {
+            const type = document.getElementById('leave-type').value;
+            const days = document.getElementById('leave-days').value;
+            
+            if(!days) return alert("Please enter number of days.");
+
+            appState.leaves.push({
+                id: Math.random(),
+                applicant: appState.currentUser.name,
+                type: type,
+                days: days,
+                status: 'Pending'
+            });
+            renderLeaves();
+        }
+
+        function approveLeave(id) {
+            const leave = appState.leaves.find(l => l.id === id);
+            if(leave) leave.status = 'Approved';
+            renderLeaves();
+        }
+
+        function renderLeaves() {
+            const tbody = document.getElementById('leave-table-body');
+            const role = appState.currentUser.role;
+            const userName = appState.currentUser.name;
+
+            // Employees only see their own leaves. Managers/HR see all.
+            const visibleLeaves = role === 'EMPLOYEE'
+                ? appState.leaves.filter(l => l.applicant === userName)
+                : appState.leaves;
+
+            tbody.innerHTML = visibleLeaves.map(l => `
+                <tr>
+                    <td>${l.applicant}</td><td>${l.type}</td><td>${l.days} Days</td>
+                    <td><span class="status-badge ${l.status === 'Approved' ? 'status-approved' : 'status-pending'}">${l.status}</span></td>
+                    <td>
+                        ${(role === 'MANAGER' || role === 'HR') && l.status === 'Pending' ? 
+                            `<button class="btn-success" onclick="approveLeave(${l.id})">Approve</button>` : 
+                            `<span style="color:var(--text-muted); font-size:12px;">No Action</span>`}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- 7. DASHBOARD & CHARTS ---
+        function renderDashboardOverview() {
+            const container = document.getElementById('stats-container');
+            const role = appState.currentUser.role;
+            const userName = appState.currentUser.name;
+            
+            let html = '';
+            if(role === 'HR' || role === 'MANAGER') {
+                html = `
+                    <div class="card"><h3>Total Registered Users</h3><p>${appState.users.length}</p></div>
+                    <div class="card"><h3>Active Projects</h3><p>${appState.projects.length}</p></div>
+                    <div class="card"><h3>Pending Leaves</h3><p>${appState.leaves.filter(l => l.status === 'Pending').length}</p></div>
+                `;
+            } else {
+                // Employee specific dashboard metrics
+                const myProjects = appState.projects.filter(p => p.team.toLowerCase().includes(userName.toLowerCase())).length;
+                const myTargets = appState.goals.filter(g => g.assignee.toLowerCase().includes(userName.toLowerCase()) && g.status !== 'Completed').length;
+                html = `
+                    <div class="card"><h3>My Active Projects</h3><p>${myProjects}</p></div>
+                    <div class="card"><h3>Pending Targets</h3><p>${myTargets}</p></div>
+                    <div class="card"><h3>Leave Balance</h3><p>12 Days</p></div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function renderCharts() {
+            const container = document.getElementById('headcount-chart');
+            // Mock data counting for the chart based on current state
+            const employeesCount = appState.users.filter(u => u.role === 'EMPLOYEE').length || 1; 
+            const managersCount = appState.users.filter(u => u.role === 'MANAGER').length || 1;
+            const hrCount = appState.users.filter(u => u.role === 'HR').length || 1;
+            
+            const total = employeesCount + managersCount + hrCount;
+
+            // Calculate heights (max 90%)
+            const empH = (employeesCount / total) * 90;
+            const mgrH = (managersCount / total) * 90;
+            const hrH = (hrCount / total) * 90;
+
+            container.innerHTML = `
+                <div class="bar-wrap">
+                    <div class="bar" style="height: ${empH}%; background-color: #2563eb;">${employeesCount}</div>
+                    <div class="bar-label">Employees</div>
+                </div>
+                <div class="bar-wrap">
+                    <div class="bar" style="height: ${mgrH}%; background-color: #c96214;">${managersCount}</div>
+                    <div class="bar-label">Managers</div>
+                </div>
+                <div class="bar-wrap">
+                    <div class="bar" style="height: ${hrH}%; background-color: #1aa940;">${hrCount}</div>
+                    <div class="bar-label">HR Staff</div>
+                </div>
+            `;
+        }
+
+    </script>
+</body>
+</html>
